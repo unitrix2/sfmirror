@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SF Mirror Master - Thing Edition</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @keyframes slideUp { from { transform: translateY(100%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        .toast { animation: slideUp 0.3s ease-out; }
+        ::-webkit-scrollbar { width: 5px; }
+        ::-webkit-scrollbar-track { background: #0d1117; }
+        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 10px; }
+        .glass-card { background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.1); }
+    </style>
+</head>
+<body class="bg-[#05070a] text-slate-300 min-h-screen flex flex-col items-center justify-center p-4 font-sans">
+
+    <div class="max-w-3xl w-full bg-[#0f172a] p-6 md:p-10 rounded-[3rem] shadow-2xl border border-slate-800 relative">
+        <div class="text-center mb-10">
+            <h1 class="text-4xl font-black text-white tracking-tighter uppercase italic">
+                SF <span class="text-blue-500">Mirror</span> Master
+            </h1>
+            <div class="flex justify-center gap-2 mt-2">
+                <span class="h-1 w-12 bg-blue-600 rounded-full"></span>
+                <span class="h-1 w-4 bg-slate-700 rounded-full"></span>
+            </div>
+        </div>
+        
+        <div class="space-y-8">
+            <div class="flex flex-col md:flex-row gap-3">
+                <input type="text" id="urlInput" placeholder="Paste SourceForge Link..." 
+                       class="flex-1 p-5 rounded-2xl bg-[#05070a] border border-slate-700 focus:border-blue-500 outline-none text-sm text-blue-400 font-mono shadow-inner">
+                <button onclick="realSpeedAnalyze()" id="btn" class="bg-blue-600 hover:bg-blue-500 text-white px-8 rounded-2xl font-black text-xs shadow-lg active:scale-95 transition-all py-5 uppercase tracking-widest">
+                    Run Speed Test
+                </button>
+            </div>
+
+            <div id="statusBox" class="hidden glass-card p-5 rounded-2xl">
+                <p id="statusText" class="text-[10px] text-blue-400 mb-3 font-mono uppercase text-center tracking-widest font-bold"></p>
+                <div class="w-full bg-slate-900 h-2 rounded-full overflow-hidden p-[2px]">
+                    <div id="pBar" class="bg-blue-500 h-full w-0 transition-all duration-300 rounded-full shadow-[0_0_10px_rgba(59,130,246,0.8)]"></div>
+                </div>
+            </div>
+
+            <div id="result" class="hidden space-y-8">
+                <div class="space-y-3">
+                    <h3 class="text-[10px] text-slate-500 font-black uppercase tracking-[0.2em] px-2 flex items-center gap-2">
+                        <span class="h-2 w-2 bg-blue-500 rounded-full animate-pulse"></span> IP-Based Performance Table
+                    </h3>
+                    <div class="overflow-hidden rounded-2xl border border-slate-800 bg-black/30 max-h-64 overflow-y-auto">
+                        <table class="w-full text-[11px] text-left">
+                            <thead class="bg-slate-900/80 text-slate-500 sticky top-0 backdrop-blur-md">
+                                <tr>
+                                    <th class="p-4">Server</th>
+                                    <th class="p-4">Location</th>
+                                    <th class="p-4 text-right">Download Score</th>
+                                    <th class="p-4 text-center">Copy</th>
+                                </tr>
+                            </thead>
+                            <tbody id="mirrorTable" class="divide-y divide-slate-800/50"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 md:grid-cols-3 gap-4 border-t border-slate-800/50 pt-8">
+                    <div class="p-5 glass-card rounded-3xl text-center">
+                        <p class="text-[9px] text-slate-500 uppercase font-bold tracking-widest mb-2">Total Size</p>
+                        <p id="fileSizeVal" class="text-xl font-black text-white">---</p>
+                    </div>
+                    <div class="p-5 glass-card rounded-3xl text-center border-emerald-500/20">
+                        <p class="text-[9px] text-slate-500 uppercase font-bold tracking-widest mb-2">Best For Your IP</p>
+                        <p id="bestMirrorVal" class="text-xl font-black text-emerald-400">-</p>
+                    </div>
+                    <div class="p-5 glass-card rounded-3xl text-center col-span-2 md:col-span-1 border-blue-500/20">
+                        <p class="text-[9px] text-slate-500 uppercase font-bold tracking-widest mb-2">Test Score</p>
+                        <p id="bestLatVal" class="text-xl font-black text-blue-400">-</p>
+                    </div>
+                </div>
+
+                <div class="space-y-4 pt-4">
+                    <p class="text-[10px] text-slate-500 font-black uppercase tracking-[0.2em] px-2">Direct Link (Bypass Redirects)</p>
+                    <div class="relative group">
+                        <input type="text" id="finalUrlField" readonly 
+                               class="w-full p-5 bg-[#05070a] rounded-2xl text-[10px] font-mono border border-slate-700 text-blue-400 focus:outline-none pr-32 shadow-inner">
+                        <button onclick="copyLink(document.getElementById('finalUrlField').value)" 
+                                class="absolute right-2 top-2 bottom-2 bg-blue-600 hover:bg-blue-500 text-white px-5 rounded-xl text-[10px] font-black transition-all active:scale-95">
+                            COPY LINK
+                        </button>
+                    </div>
+                    <a id="dlAction" href="#" class="block w-full bg-white text-black text-center p-5 rounded-2xl font-black text-lg hover:bg-slate-200 transition-all shadow-xl shadow-white/5">
+                        DOWNLOAD NOW
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="mt-8 flex items-center gap-3 bg-slate-900/50 border border-slate-800 px-6 py-2.5 rounded-full backdrop-blur-md shadow-xl">
+        <span class="h-2 w-2 bg-emerald-500 rounded-full animate-pulse"></span>
+        <p class="text-[11px] font-bold text-slate-400 tracking-widest uppercase">Created by <span class="text-white">Thing</span></p>
+    </div>
+
+    <div id="toastContainer" class="fixed bottom-10 left-1/2 -translate-x-1/2 z-50 pointer-events-none"></div>
+
+    <script>
+        const mirrors = [
+            {id: "excellmedia", loc: "Hyderabad, IN"}, {id: "netix", loc: "Bulgaria"}, 
+            {id: "twds", loc: "Taiwan"}, {id: "jaist", loc: "Japan"}, 
+            {id: "nchc", loc: "Taiwan (2)"}, {id: "iweb", loc: "Canada"}, 
+            {id: "ayera", loc: "USA"}, {id: "vorboss", loc: "UK"},
+            {id: "freefr", loc: "France"}, {id: "liquidtelecom", loc: "South Africa"}
+        ];
+
+        async function realSpeedAnalyze() {
+            const input = document.getElementById('urlInput').value.trim();
+            if(!input.includes("sourceforge.net/projects/")) return showToast("Invalid SF Link!", "bg-red-600");
+
+            document.getElementById('statusBox').classList.remove('hidden');
+            document.getElementById('result').classList.add('hidden');
+            const table = document.getElementById('mirrorTable');
+            table.innerHTML = "";
+            document.getElementById('fileSizeVal').innerText = "Analyzing...";
+
+            const parts = input.split('/projects/')[1].split('/files/');
+            const projectName = parts[0];
+            const filePart = parts[1].replace('/download', '').split('?')[0];
+
+            let results = [];
+            let completed = 0;
+
+            for(let m of mirrors) {
+                document.getElementById('statusText').innerText = `Testing Actual Download from ${m.id}...`;
+                const start = performance.now();
+                let success = false;
+                let score = 9999;
+                
+                const mUrl = `https://${m.id}.dl.sourceforge.net/project/${projectName}/${filePart}?viasf=1`;
+
+                try {
+                    // Actual Speed Test: Requesting a small chunk of the real file
+                    // We use 'no-cors' so we can't read the data, but the browser still does the transfer
+                    await fetch(mUrl, { 
+                        method: 'GET', 
+                        headers: { 'Range': 'bytes=0-262144' }, // 256KB chunk
+                        mode: 'no-cors' 
+                    });
+                    success = true;
+                    score = (performance.now() - start).toFixed(0);
+                } catch(e) { 
+                    score = 9999;
+                }
+
+                results.push({id: m.id, loc: m.loc, lat: parseInt(score), status: success, url: mUrl});
+
+                table.innerHTML += `
+                    <tr class="hover:bg-white/5 transition-colors">
+                        <td class="p-4 font-mono text-blue-400 font-bold">${m.id.toUpperCase()}</td>
+                        <td class="p-4 text-slate-500 text-[10px] italic">${m.loc}</td>
+                        <td class="p-4 text-right font-mono font-bold ${score < 800 ? 'text-emerald-500' : 'text-orange-400'}">${success ? score + 'ms' : 'BLOCKED'}</td>
+                        <td class="p-4 text-center">
+                            <button onclick="copyLink('${mUrl}')" class="bg-slate-800 text-slate-300 hover:bg-blue-600 hover:text-white px-4 py-2 rounded-xl text-[9px] font-black border border-slate-700 transition-all shadow-sm">
+                                COPY
+                            </button>
+                        </td>
+                    </tr>`;
+                
+                completed++;
+                document.getElementById('pBar').style.width = (completed/mirrors.length*100) + "%";
+            }
+
+            const active = results.filter(r => r.status && r.lat < 9000).sort((a,b) => a.lat - b.lat);
+            if(active.length === 0) return showToast("ISP Blocked All Mirrors!", "bg-red-600");
+
+            const best = active[0];
+            
+            // Get Exact File Size from Best Mirror
+            try {
+                const head = await fetch(best.url, {method: 'HEAD'});
+                const size = head.headers.get('content-length');
+                if (size) {
+                    const bytes = parseInt(size);
+                    if (bytes > 1073741824) document.getElementById('fileSizeVal').innerText = (bytes/1073741824).toFixed(2) + " GB";
+                    else document.getElementById('fileSizeVal').innerText = (bytes/1048576).toFixed(2) + " MB";
+                }
+            } catch(e) { document.getElementById('fileSizeVal').innerText = "Live Link"; }
+
+            document.getElementById('bestMirrorVal').innerText = best.id.toUpperCase();
+            document.getElementById('bestLatVal').innerText = best.lat + "ms";
+            document.getElementById('finalUrlField').value = best.url;
+            document.getElementById('dlAction').href = best.url;
+
+            document.getElementById('statusBox').classList.add('hidden');
+            document.getElementById('result').classList.remove('hidden');
+        }
+
+        function copyLink(text) {
+            const textArea = document.createElement("textarea");
+            textArea.value = text;
+            document.body.appendChild(textArea);
+            textArea.select();
+            document.execCommand('copy');
+            document.body.removeChild(textArea);
+            showToast("Direct Link Copied! ✅", "bg-emerald-600");
+        }
+
+        function showToast(msg, color) {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            toast.className = `toast px-8 py-4 rounded-2xl text-white font-black text-[11px] shadow-2xl mb-3 ${color} border border-white/10`;
+            toast.innerText = msg;
+            container.appendChild(toast);
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                setTimeout(() => toast.remove(), 500);
+            }, 3000);
+        }
+    </script>
+</body>
+</html>
